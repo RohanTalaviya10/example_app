@@ -520,18 +520,18 @@ def get_macro_nutrients():
 
     # Fibers Input
     st.write("#### Fibers")
-    st.write("##### Source : Contains at least    3 g of fat per 100 g")
-    st.write("##### High : Contains at least     6 g of fat per 100 g")
+    st.write("##### Source : Contains at least    3 g of Fibers per 100 g")
+    st.write("##### High : Contains at least     6 g of Fibers per 100 g")
     fibers_value = st.number_input("Enter value for Fibers:", min_value=0.0, step=1.00, key="fibers_value")
     fibers_unit = st.selectbox("Select unit for Fibers:", options=["g", "mg", "kg"], key="fibers_unit")
     
     fibers_per_100g = (fibers_value * unit_conversion[fibers_unit] / serving_size) * 100
     if fibers_per_100g >= fibre_high:
         st.write("Result: High in Fibers")
-    elif fibers_per_100g >= fiber_source:
+    elif fibers_per_100g >= fibre_source:
         st.write("Result: Contains Fibers")
     else:
-        deficit_fiber = fiber_source - fibers_per_100g
+        deficit_fiber = fibre_source - fibers_per_100g
         st.write(f"Result: Fibers are below the source limit by {deficit_fiber:.2f}g per 100{unit}")
 
 # Call the function to display the Streamlit UI
