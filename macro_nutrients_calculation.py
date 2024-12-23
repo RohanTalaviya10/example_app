@@ -417,7 +417,7 @@ gluten_ingredients = ["wheat","flour","barley","rye","malt","farina","semolina",
 lactose_ingredients = ["milk","cream","butter","yogurt","cheese","whey","curd","milk powder","milk solids","evaporated milk","condensed milk","paneer"]
 
 
-serving_size = 200
+serving_size = 100
 unit = "g"
 
 import streamlit as st
@@ -443,88 +443,96 @@ unit_conversion = {
     "µg": 0.000001,
 }
 
-serving_size = 200
-unit = "g"
-
 # Streamlit-based Macro Nutrient Analysis
 def get_macro_nutrients():
     st.title("Macro-Nutrient Analysis")
 
+
+    serving_size = float(st.number_input("Serving size in gram:",100))
+    unit = st.selectbox("Select unit for Serving size:", options=["g","ml"])
     # Energy limits
-    energy_low = 40
-    energy_free = 4
+    energy_low = 40 if unit == "g" else 20
+    energy_free = 0 if unit == "g" else 4
 
     # Fats limits
-    fats_low = 3
+    fats_low = 3 if unit == "g" else 1.5
     fats_free = 0.5
 
     # Protein limits
     rda_protein = rda_values["protein"]
-    proteins_high = 0.2 * rda_protein
-    proteins_source = 0.1 * rda_protein
+    proteins_high = 0.2 * rda_protein if unit == "g" else 0.1 * rda_protein
+    proteins_source = 0.1 * rda_protein if unit == "g" else 0.05 * rda_protein
 
     # Fiber limits
-    fiber_high = 6
-    fiber_source = 3
+    fibre_high = 6 if unit == "g" else 0
+    fibre_source = 3 if unit == "g" else 0
 
     # Collect user inputs and show results dynamically
     st.write("### Input Values for Macro Nutrients")
+    
 
     # Energy Input
     st.write("#### Energy")
-    energy_value = st.number_input("Enter value for Energy:", min_value=0.0, step=0.01, key="energy_value")
+    st.write("##### Low : Not more than   40 kcal per 100 g   and   20 kcal per 100 ml")
+    st.write("##### Free : Not more than    4 kcal per 100 ml")
+    energy_value = st.number_input("Enter value for Energy:", min_value=0.0, step=1.00, key="energy_value")
     energy_unit = st.selectbox("Select unit for Energy:", options=["kcal"], key="energy_unit")
-    if energy_value > 0:
-        energy_per_100g = (energy_value / serving_size) * 100
-        if energy_per_100g <= energy_free:
-            st.write("Result: Energy Free")
-        elif energy_per_100g <= energy_low:
-            st.write("Result: Low in Energy")
-        else:
-            excess_energy = energy_per_100g - energy_low
-            st.write(f"Result: Energy exceeds the low limit by {excess_energy:.2f} kcal per 100g")
+    energy_per_100g = (energy_value / serving_size) * 100
+    if energy_per_100g <= energy_free:
+      st.write("Result: Energy Free")
+    elif energy_per_100g <= energy_low:
+      st.write("Result: Low in Energy")
+    else:
+        excess_energy = energy_per_100g - energy_low
+        st.write(f"Result: Energy exceeds the low limit by {excess_energy:.2f} kcal per 100{unit}")
 
     # Fats Input
     st.write("#### Fats")
-    fats_value = st.number_input("Enter value for Fats:", min_value=0.0, step=0.01, key="fats_value")
+    st.write("##### Low : Not more than   3 g of fat per 100 g   and   1.5 g of fat per 100ml")
+    st.write("##### Free : Not more than    0.5 g of fat per 100 g or 100 ml")
+    fats_value = st.number_input("Enter value for Fats:", min_value=0.0, step=1.00, key="fats_value")
     fats_unit = st.selectbox("Select unit for Fats:", options=["g", "mg", "kg"], key="fats_unit")
-    if fats_value > 0:
-        fats_per_100g = (fats_value * unit_conversion[fats_unit] / serving_size) * 100
-        if fats_per_100g <= fats_free:
-            st.write("Result: Fats Free")
-        elif fats_per_100g <= fats_low:
-            st.write("Result: Low in Fats")
-        else:
-            excess_fats = fats_per_100g - fats_low
-            st.write(f"Result: Fats exceed the low limit by {excess_fats:.2f}g per 100g")
+    
+    fats_per_100g = (fats_value * unit_conversion[fats_unit] / serving_size) * 100
+    if fats_per_100g <= fats_free:
+        st.write("Result: Fats Free")
+    elif fats_per_100g <= fats_low:
+        st.write("Result: Low in Fats")
+    else:
+        excess_fats = fats_per_100g - fats_low
+        st.write(f"Result: Fats exceed the low limit by {excess_fats:.2f}g per 100{unit}")
 
     # Proteins Input
     st.write("#### Proteins")
-    proteins_value = st.number_input("Enter value for Proteins:", min_value=0.0, step=0.01, key="proteins_value")
+    st.write(f"##### Source : More than   {proteins_source}g of per 100 g or ml (10% for solid and 5% for liquid of RDA(50g/day))")
+    st.write(f"##### High : More than    {proteins_high}g of per 100 g or ml (20% for solid and 10% for liquid of RDA(50g/day))")
+    proteins_value = st.number_input("Enter value for Proteins:", min_value=0.0, step=1.00, key="proteins_value")
     proteins_unit = st.selectbox("Select unit for Proteins:", options=["g", "mg", "kg"], key="proteins_unit")
-    if proteins_value > 0:
-        proteins_per_100g = (proteins_value * unit_conversion[proteins_unit] / serving_size) * 100
-        if proteins_per_100g >= proteins_high:
-            st.write("Result: High in Protein")
-        elif proteins_per_100g >= proteins_source:
-            st.write("Result: Contains Protein")
-        else:
-            deficit_protein = proteins_source - proteins_per_100g
-            st.write(f"Result: Proteins are below the source limit by {deficit_protein:.2f}g per 100g")
+    
+    proteins_per_100g = (proteins_value * unit_conversion[proteins_unit] / serving_size) * 100
+    if proteins_per_100g >= proteins_high:
+        st.write("Result: High in Protein")
+    elif proteins_per_100g >= proteins_source:
+        st.write("Result: Contains Protein")
+    else:
+        deficit_protein = proteins_source - proteins_per_100g
+        st.write(f"Result: Proteins are below the source limit by {deficit_protein:.2f}g per 100{unit}")
 
     # Fibers Input
     st.write("#### Fibers")
-    fibers_value = st.number_input("Enter value for Fibers:", min_value=0.0, step=0.01, key="fibers_value")
+    st.write("##### Source : Contains at least    3 g of fat per 100 g")
+    st.write("##### High : Contains at least     6 g of fat per 100 g")
+    fibers_value = st.number_input("Enter value for Fibers:", min_value=0.0, step=1.00, key="fibers_value")
     fibers_unit = st.selectbox("Select unit for Fibers:", options=["g", "mg", "kg"], key="fibers_unit")
-    if fibers_value > 0:
-        fibers_per_100g = (fibers_value * unit_conversion[fibers_unit] / serving_size) * 100
-        if fibers_per_100g >= fiber_high:
-            st.write("Result: High in Fibers")
-        elif fibers_per_100g >= fiber_source:
-            st.write("Result: Contains Fibers")
-        else:
-            deficit_fiber = fiber_source - fibers_per_100g
-            st.write(f"Result: Fibers are below the source limit by {deficit_fiber:.2f}g per 100g")
+    
+    fibers_per_100g = (fibers_value * unit_conversion[fibers_unit] / serving_size) * 100
+    if fibers_per_100g >= fibre_high:
+        st.write("Result: High in Fibers")
+    elif fibers_per_100g >= fiber_source:
+        st.write("Result: Contains Fibers")
+    else:
+        deficit_fiber = fiber_source - fibers_per_100g
+        st.write(f"Result: Fibers are below the source limit by {deficit_fiber:.2f}g per 100{unit}")
 
 # Call the function to display the Streamlit UI
 get_macro_nutrients()
