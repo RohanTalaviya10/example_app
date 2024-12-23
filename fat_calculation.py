@@ -417,31 +417,44 @@ gluten_ingredients = ["wheat","flour","barley","rye","malt","farina","semolina",
 lactose_ingredients = ["milk","cream","butter","yogurt","cheese","whey","curd","milk powder","milk solids","evaporated milk","condensed milk","paneer"]
 
 
+st.title("Fats Analysis")
+
 serving_size = 200 #st.text_input("serving size")  # Serving size in grams or milliliters
 unit = "g"#data["serving"]["unit"].lower()  # Get the unit (g or ml)
 
 #____________________________ saturated_fats _______________________________________________________________________________________________________________________________
 def get_saturated_fats():
 
+    serving_size = float(st.number_input("Serving size in gram:",100))
+    unit = st.selectbox("Select unit for Serving size:", options=["g","ml"])
+
     saturated_fats_low = 1.5 if unit == "g" else 0.75 #in gram
     saturated_fats_free = 0.1 #in gram
 
-    fat = float(st.text_input("fats value : ",1))
-    fat_unit = str(st.text_input("fats unit : ","g"))
+    
+    # Total energy
+    total_energy = float(st.text_input("energy value : ",1))
 
-    saturated_fats_unit = str(st.text_input("total_saturated_fats unit : ","g"))
+    fat = float(st.text_input("fats value : ",1))
+    fat_unit = st.selectbox("fats unit :", options=["g", "mg", "kg"])
+
+    saturated_fats_unit = st.selectbox("total_saturated_fats unit :", options=["g", "mg", "kg"])
     total_saturated_fats =  float(st.text_input("total_saturated_fats value : ",1))
 
-    monounsaturated_fats_unit = str(st.text_input("total_monounsaturated_fats unit : ","g"))
+    monounsaturated_fats_unit = st.selectbox("total_monounsaturated_fats unit :", options=["g", "mg", "kg"])
     total_monounsaturated_fats = float(st.text_input("total_monounsaturated_fats value : ",1))
 
-    polyunsaturated_fats_unit = str(st.text_input("total_polyunsaturated_fats unit : ","g"))
+    polyunsaturated_fats_unit = st.selectbox("total_polyunsaturated_fats unit :", options=["g", "mg", "kg"])
     total_polyunsaturated_fats = float(st.text_input("total_polyunsaturated_fats value : ",1))
 
     saturated_fats_in_grams = total_saturated_fats * unit_conversion.get(saturated_fats_unit, 1)
 
     # Calculate saturated fats per 100g
     saturated_fats_per_100g = (saturated_fats_in_grams / serving_size) * 100
+
+    st.write("### saturated fats")
+    st.write("##### Low : Not more than    1.5 g per 100 g    and   0.75 g per 100 ml")
+    st.write("##### Free : Not more than    4 kcal per 100 ml")
 
     if saturated_fats_per_100g <= saturated_fats_free:
         st.write("Saturated Fats Free")
@@ -450,7 +463,7 @@ def get_saturated_fats():
     else:
         # Calculate how much excess it is
         excess_saturated_fats = saturated_fats_per_100g - saturated_fats_low
-        st.write(f"High in Saturated Fats: {excess_saturated_fats:.2f}g per 100g")
+        st.write(f"High in Saturated Fats: {excess_saturated_fats:.2f}g per 100{unit}")
 
     
 
@@ -461,8 +474,7 @@ def get_saturated_fats():
     # Calculate total fatty acids
     total_fats = total_saturated_fats + total_monounsaturated_fats + total_polyunsaturated_fats
 
-    # Total energy
-    total_energy = float(st.text_input("energy value : ",1))
+    
 
     # Energy from PUFA (polyunsaturated fats)
     energy_from_pufa = total_polyunsaturated_fats * 9  # 1g PUFA = 9 kcal
@@ -472,6 +484,9 @@ def get_saturated_fats():
 
     # Calculate percentage of energy from PUFA
     pufa_energy_percentage = (energy_from_pufa / total_energy) * 100
+
+    st.write("### PUFA")
+    st.write("##### High : Shall only be made where at least 45% of the total fatty acids present in the product are derived from poly unsaturated fat and under the condition that polyunsaturated fat provides more than 20% of energy of the product")
 
     # Check if the dish qualifies as "PUFA High"
     if pufa_percentage_in_fats >= 45 and pufa_energy_percentage > 20:
@@ -487,6 +502,9 @@ def get_saturated_fats():
           st.write(f"PUFA energy is short by {pufa_energy_excess:.2f}% of total energy")
 
 # __________________________________ MUFA ___________________________________________________________________________________________________________________________________
+
+    st.write("### MUFA")
+    st.write("##### High : Shall only be made where at least 45% of the total fatty acids present in the product are derived from mono unsaturated fat and under the condition that monounsaturated fat provides more than 20% of energy of the product ")
 
     total_fatty_acids = total_saturated_fats + total_monounsaturated_fats + total_polyunsaturated_fats
 
@@ -516,6 +534,9 @@ def get_saturated_fats():
           st.write(f"MUFA energy exceeds by {mufa_energy_excess:.2f}% of total energy")
 
 #__________________________________ Unsaturated Fat ___________________________________________________________________________________________________________________________
+
+    st.write("### Unsaturated Fat")
+    st.write("##### High : At least 70% of the fatty acids present in the product are derive from unsaturated fat under the condition that unsaturated fat provides more than 20% of energy of the product")
 
     # Energy from Unsaturated Fats (Monounsaturated + Polyunsaturated fats)
     energy_from_unsaturated_fats = (total_monounsaturated_fats + total_polyunsaturated_fats) * 9  # 1g unsaturated fats = 9 kcal
@@ -547,7 +568,9 @@ def get_saturated_fats():
 
 #________________________________ Trans Fat ____________________________________________________________________________________________________________________________________
 
-    
+    st.write("### Trans Fat")
+    st.write("##### Free : contains less than 0.2g trans fat per 100 g or 100ml")
+
     fat = fat * unit_conversion.get(fat_unit, 1)
 
     # Calculate Trans Fat
@@ -563,101 +586,12 @@ def get_saturated_fats():
 
 get_saturated_fats()
 
-#________________________________ macro_nutrients ______________________________________________________________________________________________________________________________
-def get_macro_nutrients(data):
-
-    # energy limits
-    energy_low = 40 if unit == "g" else 20
-    energy_free = 4 if unit == "ml" else 0
-
-    # fats limits
-    fats_low = 3 if unit == "g" else 1.5
-    fats_free = 0.5
-
-    # proteins limits
-    rda_protein = rda_values["protein"]
-    proteins_high = 0.2 * rda_protein if unit == "g" else 0.1 * rda_protein
-    proteins_source = 0.1 * rda_protein if unit == "g" else 0.05 * rda_protein
-
-    # fibre limits
-    fibre_high = 6 if unit == "g" else 0
-    fibre_source = 3 if unit == "g" else 0
-
-    for nutrient in data["nutrients"].get("macro_nutrients", []):
-
-        # Convert nutrient value to grams if needed
-        nutrient_unit = nutrient.get("unit", "g").lower()
-        nutrient_value_in_grams = nutrient["value"] * unit_conversion.get(nutrient_unit, 1)
-
-        if nutrient["name"] == "energy":
-
-            energy_per_100g = (nutrient["value"] / serving_size) * 100
-
-            if energy_per_100g <= energy_free:
-                st.write("Energy Free")
-            elif energy_per_100g <= energy_low:
-                st.write("Low in Energy")
-            else:
-                energy_excess = energy_per_100g - energy_low
-                st.write(f"Energy exceeds the low limit by {energy_excess:.2f} kcal per 100g")
-
-        if nutrient["name"] == "fats":
-            fats_per_100g = (nutrient["value"] / serving_size) * 100
-            if fats_per_100g <= fats_free:
-                st.write("Fats Free")
-            elif fats_per_100g <= fats_low:
-                st.write("Low in Fats")
-            else:
-              fats_excess = fats_per_100g - fats_low
-              st.write(f"Fats exceed the low limit by {fats_excess:.2f}g per 100g")
-
-        if nutrient["name"] == "proteins":
-            proteins_per_100g = (nutrient["value"] / serving_size) * 100
-            if proteins_per_100g >= proteins_high:
-                st.write("High in protein")
-            elif proteins_per_100g >= proteins_source:
-                st.write("Has protein")
-            else:
-                proteins_deficit = proteins_source - proteins_per_100g
-                st.write(f"Proteins are below the source limit by {proteins_deficit:.2f}g per 100g")
 
 
-        if nutrient["name"] == "fibers":
-            fibers_per_100g = (nutrient["value"] / serving_size) * 100
-            if fibers_per_100g >= fibre_high:
-                st.write("High in Fibers")
-            elif fibers_per_100g >= fibre_source:
-                st.write("Has Fibers")
-            else:
-                fibers_deficit = fibre_source - fibers_per_100g
-                st.write(f"Fibers are below the source limit by {fibers_deficit:.2f}g per 100g")
 
-#______________________________ sodium _______________________________________________________________________________________________________________________________________
-def get_sodium(data):
 
-    # Sodium limits
-    sodium_free = 0.0005
-    sodium_very_low = 0.04
-    sodium_low = 0.12
 
-    for nutrient in data["nutrients"].get("minerals", []):
 
-        if nutrient["name"] == "sodium":
-
-            sodium_unit = nutrient.get("unit").lower()
-            sodium = nutrient["value"] * unit_conversion.get(sodium_unit, 1)
-            sodium_per_100g = ((sodium / serving_size) * 100)
-
-            if sodium_per_100g <= sodium_free:
-                st.write("Sodium Free")
-            elif sodium_per_100g <= sodium_very_low:
-                st.write("Very Low in Sodium")
-            elif sodium_per_100g <= sodium_low:
-                st.write("Low in Sodium")
-            else:
-                # Calculate how much sodium exceeds the low threshold if it's above
-                sodium_excess = sodium_per_100g - sodium_low
-                st.write(f"Sodium exceeds the low limit by {sodium_excess:.4f}g per 100g")
 
 #_____________________________ Lactose ______________________________________________________________________________________________________________________________________
 def get_lactose(data):
@@ -676,43 +610,3 @@ def get_gluten(data):
         for gluten_item in gluten_ingredients:
             if gluten_item in ingredient_name:
                 st.write("Gluten Free")
-
-#_______________________________ minerals, vitamins ___________________________________________________________________________________________________________________________
-def get_minerals_vitamins(data):
-
-    for category in ['water_soluble_vitamin', 'fat_soluble_vitamin', 'minerals']:
-        for nutrient in data["nutrients"][category]:
-            nutrient_name = nutrient["name"]
-            nutrient_value = nutrient["value"]
-            nutrient_unit = nutrient["unit"]
-
-            if nutrient_name in rda_values:
-                rda_value = rda_values[nutrient_name]
-
-
-            nutrient_value = nutrient_value * unit_conversion.get(nutrient_unit.lower(), 1)
-
-            if unit.lower() == "ml":
-                if nutrient_value != 0:
-                    percentage = (nutrient_value / rda_value) * 100
-                    if percentage >= 7.5:
-                        if percentage >= 15:
-                            st.write(f"High in {nutrient_name}")
-                        else:
-                            st.write(f"Contains {nutrient_name}")
-                else:
-                    remaining_percentage = 7.5 - percentage
-                    st.write(f"{nutrient_name} lack by: {remaining_percentage:.2f}% of RDA")
-
-            elif unit.lower() == "g":
-                if nutrient_value != 0:
-                    percentage = (nutrient_value / rda_value) * 100
-                    if percentage >= 15:
-                        if percentage >= 30:
-                            st.write(f"High in {nutrient_name}")
-                        else:
-                            st.write(f"Contains {nutrient_name}")
-                    else:
-                        remaining_percentage = 15 - percentage
-                        st.write(f"{nutrient_name} lack by: {remaining_percentage:.2f}% of RDA")
-
