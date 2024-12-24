@@ -420,41 +420,55 @@ lactose_ingredients = ["milk","cream","butter","yogurt","cheese","whey","curd","
 serving_size = 200
 unit = "g"
 
+st.title("Nutrition Analysis")
+
+serving_size = float(st.number_input("Serving size in gram:",100))
+unit = st.selectbox("Select unit for Serving size:", options=["g","ml"])
 
 import json
 # Function Definitions
-def convert_to_grams(value, unit):
+def convert_to_grams(value, nutrient_unit):
     """Converts nutrient value to grams based on the unit."""
-    return value * unit_conversion.get(unit.lower(), 1)
+    return value * unit_conversion.get(nutrient_unit.lower(), 1)
 
 def calculate_rda_percentage(value, rda_value):
     """Calculates percentage of RDA based on value and recommended daily allowance."""
     return (value / rda_value) * 100
 
-def process_nutrient(nutrient_name, value, unit):
+def process_nutrient(nutrient_name, value, nutrient_unit):
     """Processes nutrient and calculates its RDA percentage."""
     if nutrient_name not in rda_values:
         return f"RDA for {nutrient_name} not defined."
 
     rda_value = rda_values[nutrient_name]
-    converted_value = convert_to_grams(value, unit)
+    converted_value = convert_to_grams(value, nutrient_unit)
     percentage = calculate_rda_percentage(converted_value, rda_value)
 
-    if percentage >= 15:
-        if percentage >= 30:
-            return f"High in {nutrient_name} ({percentage:.2f}% of RDA)"
-        return f"Contains {nutrient_name} ({percentage:.2f}% of RDA)"
+    
+    if unit == "g":
+      if percentage >= 15:
+          if percentage >= 30:
+              return f"High in {nutrient_name} ({percentage:.2f}% of RDA)"
+          return f"Contains {nutrient_name} ({percentage:.2f}% of RDA)"
+      else:
+          return f"Lacks {nutrient_name} by {15 - percentage:.2f}% of RDA"
     else:
-        return f"Lacks {nutrient_name} by {15 - percentage:.2f}% of RDA"
+      if percentage >= 7.5:
+          if percentage >= 15:
+              return f"High in {nutrient_name} ({percentage:.2f}% of RDA)"
+          return f"Contains {nutrient_name} ({percentage:.2f}% of RDA)"
+      else:
+          return f"Lacks {nutrient_name} by {15 - percentage:.2f}% of RDA"
 
-# Streamlit Interface
-st.title("Nutrition Analysis")
 
-st.write("Enter values for each nutrient below:")
+
+
 results = []
 for nutrient_name in rda_values.keys():
     st.write(f"#### {nutrient_name.title()}")
-    nutrient_value = st.number_input(f"Enter value for {nutrient_name}:", min_value=0.0, step=0.01)
+    st.write(f"##### Source : The food provides at least {"{:.6f}".format(rda_values[nutrient_name]*0.15)}g per 100g for solids or {"{:.6f}".format(rda_values[nutrient_name]*0.075)}g of RDA of the vitamin/mineral per 100 ml for liquids ")
+    st.write(f"##### High : The food provides at least {"{:.6f}".format(rda_values[nutrient_name]*0.30)}g of RDA per 100 g for solids or {"{:.6f}".format(rda_values[nutrient_name]*0.15)}g per 100 ml for liquids")
+    nutrient_value = st.number_input(f"Enter value for {nutrient_name}:", min_value=0.0, step=1.00)
     nutrient_unit = st.selectbox(f"Select unit for {nutrient_name}:", options=["g", "mg", "µg", "kg"], key=f"{nutrient_name}_unit")
 
     if st.button(f"Process {nutrient_name}"):
