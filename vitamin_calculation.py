@@ -429,7 +429,7 @@ import json
 # Function Definitions
 def convert_to_grams(value, nutrient_unit):
     """Converts nutrient value to grams based on the unit."""
-    return value * unit_conversion.get(nutrient_unit.lower(), 1)
+    return (value * unit_conversion.get(nutrient_unit.lower(), 1) / serving_size) * 100
 
 def calculate_rda_percentage(value, rda_value):
     """Calculates percentage of RDA based on value and recommended daily allowance."""
